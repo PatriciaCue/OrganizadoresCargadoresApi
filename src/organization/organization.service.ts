@@ -2,64 +2,64 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { Organization } from './entities/organization.entity';
-
 import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrganizationService {
 
-  private organizations: Organization[]=[];
+  constructor(@InjectRepository(Organization) private organizationsRepository: Repository<Organization> ){}
 
-  create(createOrganizationDto: CreateOrganizationDto) {
-    const newOrganization = new Organization();
+  create(newOrganizationDto: CreateOrganizationDto) : Promise<Organization> {
+      const newOrganization = new Organization();
+      newOrganization.name=newOrganizationDto.name;
+      newOrganization.legalEntity=newOrganizationDto.legalEntity;
+      newOrganization.chargePoints=[];
+      return this.organizationsRepository.save(newOrganization);  
+  }
+
+  async findAll() : Promise<Organization[]> {
     
-    newOrganization.id=uuidv4(),
-    newOrganization.name=createOrganizationDto.name,
-    newOrganization.legalEntity=createOrganizationDto.legalEntity,
-    newOrganization.chargePoint=[]
+    try {
+      const organizations = await this.organizationsRepository.find(); 
+      if(!organizations) throw new NotFoundException(`Organizations is empty`);
+      return organizations;  
     
-    //Añadimos la organizacion al array que hemos creado
-    //Despues tendriamos que añadirlo a nuestra BD
-    this.organizations.push(newOrganization);
-    console.log(newOrganization,'newOrganization');
-    console.log(createOrganizationDto,'createOrganizationDto');
-    return 'This action adds a new organization';
+    } catch (error) {
+      throw new NotFoundException(`${error}`);
+    
+    }
   }
 
-  findAll() {
-    //Quitar el id, cuando muestra el resultado??
-    return this.organizations;
-    //return `This action returns all organization`;
+  async findOne(organizationId: string) : Promise<Organization> {
+    try {
+      const organization = await this.organizationsRepository.findOne({where:{id:organizationId}});
+      if(!organization) throw new NotFoundException(`Organization with ${organizationId} not found`); 
+      return organization;
+    
+    } catch (error) {
+      throw new NotFoundException(`${error}`);
+    }
+    
   }
-
-  findOne(id: string) {
-    if(this.organizations.length == 0)throw new NotFoundException(`Organizations empty`) 
-    const organization = this.organizations.filter((org)=> org.id === id );
-    if(organization.length == 0) throw new NotFoundException(`Organization with ${id} not found`)
-    return organization;
-    //return `This action returns a #${id} organization`;
-  }
-
-  update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
+  //TODO: Optional name
+  async update(organizationId: string, updateOrganizationDto: UpdateOrganizationDto) : Promise<Organization> {
     
     const { name, legalEntity } = updateOrganizationDto;
-    const updatedOrganization = this.findOne(id)[0];
-    
-    if(name) updatedOrganization.name=updateOrganizationDto.name;
-    if(legalEntity) updatedOrganization.legalEntity=updateOrganizationDto.legalEntity;
-
-    this.organizations = this.organizations.map( organizationsDB => {
-      if(organizationsDB.id === id) return updatedOrganization;
-      return organizationsDB;
-    })
-    
-    return updatedOrganization;
-    //return `This action updates a #${id} organization`;
+    const toUpdatedOrganization = await this.findOne(organizationId);
+    console.log(toUpdatedOrganization,'toUpdatedOrganization');
+    //No puedo dejar el nombre vacio cuando modifico???¿¿Como lo hago opcional??
+    if(name) toUpdatedOrganization.name=updateOrganizationDto.name;
+    if(legalEntity) toUpdatedOrganization.legalEntity=updateOrganizationDto.legalEntity;
+    //this.organizationsRepository.update
+    return this.organizationsRepository.save(toUpdatedOrganization);
   }
 
-  remove(id: string) {
-    this.findOne(id);
-    this.organizations = this.organizations.filter(organization => organization.id !== id);
-    return `This action removes a #${id} organization`;
+  async remove(organizationId: string) :Promise<any> {
+    const deleteOrganization = await this.organizationsRepository.delete({id: organizationId});
+    if(!deleteOrganization.affected) throw new NotFoundException(`Organization with ${organizationId} not found`);
+    return `Organization with #${organizationId} removed`;
   }
 }
