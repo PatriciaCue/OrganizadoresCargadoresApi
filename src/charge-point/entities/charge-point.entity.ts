@@ -4,10 +4,10 @@ import { Entity , PrimaryGeneratedColumn ,Column, ManyToOne, JoinColumn} from "t
 //Information BD Register
 @Entity()
 export class ChargePoint {
-  //EVCC_01234
-  //^[A-Z]{4}_[0-9]{4}$
   @PrimaryGeneratedColumn('uuid')
   id: string//uuiid;
+  @Column()
+  identity:string
   @ManyToOne(() => Organization, (organization) => organization.chargePoints)
   @JoinColumn({name: 'OrganizationId'})
   cpo:Organization

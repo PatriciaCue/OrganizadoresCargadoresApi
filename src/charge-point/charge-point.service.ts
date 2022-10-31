@@ -20,6 +20,7 @@ export class ChargePointService {
     if(!organization) throw new NotFoundException(`Organization with ${cpoId} not found`);
 
     const newChargePoint = new ChargePoint();
+    newChargePoint.identity=createChargePointDto.identity;
     newChargePoint.cpo=organization;
     return this.chargePointsRepository.save(newChargePoint);
   }
@@ -47,10 +48,11 @@ export class ChargePointService {
   }
 
   async update(chargePointId: string, updateChargePointDto: UpdateChargePointDto) {
-    const { cpo } = updateChargePointDto;
+    const { cpo, identity } = updateChargePointDto;
     const toUpdatedChargePoint = await this.findOne(chargePointId);
     console.log(toUpdatedChargePoint,'toUpdatedChargePoint');
     if(cpo) toUpdatedChargePoint.cpo=updateChargePointDto.cpo;
+    if (identity) toUpdatedChargePoint.identity=updateChargePointDto.identity;
     return this.chargePointsRepository.save(toUpdatedChargePoint);
   }
 
