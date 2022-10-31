@@ -1,5 +1,5 @@
 import { Organization } from "src/organization/entities/organization.entity"
-import { Entity , PrimaryGeneratedColumn ,Column, ManyToOne} from "typeorm"
+import { Entity , PrimaryGeneratedColumn ,Column, ManyToOne, JoinColumn} from "typeorm"
 
 //Information BD Register
 @Entity()
@@ -9,6 +9,7 @@ export class ChargePoint {
   @PrimaryGeneratedColumn('uuid')
   id: string//uuiid;
   @ManyToOne(() => Organization, (organization) => organization.chargePoints)
+  @JoinColumn({name: 'OrganizationId'})
   cpo:Organization
 }
 

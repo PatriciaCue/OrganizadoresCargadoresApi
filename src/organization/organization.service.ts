@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { Organization } from './entities/organization.entity';
-import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -12,6 +11,7 @@ export class OrganizationService {
 
   constructor(@InjectRepository(Organization) private organizationsRepository: Repository<Organization> ){}
 
+  //TODO: añadir try and catch por si hay problemas con la BD, conexion...
   create(newOrganizationDto: CreateOrganizationDto) : Promise<Organization> {
       const newOrganization = new Organization();
       newOrganization.name=newOrganizationDto.name;
@@ -23,19 +23,17 @@ export class OrganizationService {
   async findAll() : Promise<Organization[]> {
     
     try {
-      const organizations = await this.organizationsRepository.find(); 
-      if(!organizations) throw new NotFoundException(`Organizations is empty`);
+      const organizations = await this.organizationsRepository.find({relations:['chargePoints']}); 
       return organizations;  
     
     } catch (error) {
       throw new NotFoundException(`${error}`);
-    
     }
   }
 
   async findOne(organizationId: string) : Promise<Organization> {
     try {
-      const organization = await this.organizationsRepository.findOne({where:{id:organizationId}});
+      const organization = await this.organizationsRepository.findOne({relations:['chargePoints'], where:{id:organizationId}});
       if(!organization) throw new NotFoundException(`Organization with ${organizationId} not found`); 
       return organization;
     
