@@ -3,7 +3,16 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { User } from "./entities/user.entity";
 import { UserService } from "./user.service";
 
+//Swagger//
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@ApiTags('User')
 @Controller('user')
 export class UserController {
 
