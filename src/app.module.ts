@@ -4,10 +4,12 @@ import { AppService } from './app.service';
 import { OrganizationModule } from './organization/organization.module';
 import { ChargePointModule } from './charge-point/charge-point.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './utilities/user/user.module';
 
 @Module({
   imports: [OrganizationModule, 
             ChargePointModule,
+            UserModule,
             TypeOrmModule.forRoot(
               {
                 "type": "mysql",
